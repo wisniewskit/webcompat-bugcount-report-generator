@@ -28,7 +28,7 @@ def api_request(*args, **kwargs):
         return api_request(*args, **kwargs)
 
 def get_col_c(website):
-    template = 'https://bugzilla.mozilla.org/buglist.cgi?bug_file_loc_type=allwordssubstr&list_id=14485116&resolution=---&bug_file_loc={}&query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Firefox&product=Firefox%20for%20Android&product=Tech%20Evangelism'
+    template = 'https://bugzilla.mozilla.org/buglist.cgi?bug_file_loc_type=allwordssubstr&list_id=14485116&resolution=---&bug_file_loc={}&query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Firefox&product=Firefox%20for%20Android&product=Web%20Compatibility'
     query = template.format(website)
     session = HTMLSession()
     r = session.get(query)
