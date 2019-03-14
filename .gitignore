@@ -1,1 +1,3 @@
 data/*
+# we want the list of sites in the repo
+!data/top-sites.csv
