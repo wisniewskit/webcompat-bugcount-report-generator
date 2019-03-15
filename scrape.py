@@ -7,13 +7,13 @@ from requests_html import HTMLSession
 from tablib import Dataset
 
 
-DATA_PATH = os.path.join(os.getcwd(), 'data/top-sites-report-card.xslx')
+DATA_PATH = os.path.join(os.getcwd(), 'data/top-sites.csv')
 EXPORT_PATH = os.path.join(os.getcwd(), 'data/export/{}.csv'.format(datetime.now().strftime('%Y%m%d-%H%M%S')))
 GITHUB_API_TOKEN = os.environ.get('GITHUB_API_TOKEN')
 
 
 def get_websites(dataset):
-    websites = dataset.get_col(1)
+    websites = dataset.get_col(0)
     return websites
 
 def api_request(*args, **kwargs):
@@ -22,7 +22,8 @@ def api_request(*args, **kwargs):
         response.raise_for_status()
         print(response)
         return response
-    except requests.exceptions.HTTPError:
+    except requests.exceptions.HTTPError as e:
+        print(e)
         print('Sleeping...')
         time.sleep(60)
         return api_request(*args, **kwargs)
@@ -77,8 +78,8 @@ def get_col_g(website):
 
 
 if __name__ == '__main__':
-    dataset_in = Dataset()
-    dataset_in.load(open(DATA_PATH, 'rb').read())
+    dataset_in = Dataset(headers=['Website'])
+    dataset_in.load(open(DATA_PATH, 'rb').read().decode('utf-8'), format='csv')
 
     dataset_out = Dataset(headers=[
         'Website',
@@ -103,5 +104,5 @@ if __name__ == '__main__':
         print(row)
         dataset_out.append(row)
 
-    with open(EXPORT_PATH, 'w') as f:
-        f.write(dataset_out.csv)
+    with open(EXPORT_PATH, 'wb') as f:
+        f.write(dataset_out.csv.encode('utf-8'))
