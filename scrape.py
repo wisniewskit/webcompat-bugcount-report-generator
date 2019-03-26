@@ -96,7 +96,8 @@ if __name__ == '__main__':
         'Github - open',
         'Github - severity-critical',
         'Github - needsdiagnosis',
-        'Github - sitewait'
+        'Github - sitewait',
+        'Github - duplicate'
     ])
 
     websites = get_websites(dataset_in)
