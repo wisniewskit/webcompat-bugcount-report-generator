@@ -76,6 +76,15 @@ def get_col_g(website):
     count = response['total_count']
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
+def get_col_h(website):
+    template = 'https://github.com/webcompat/web-bugs/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aduplicate'
+    query = template.format(website)
+    search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aduplicate'
+    search = search_template.format(website)
+    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
+    count = response['total_count']
+    return '=HYPERLINK("{}"; {})'.format(query, count)
+
 
 if __name__ == '__main__':
     dataset_in = Dataset(headers=['Website'])
@@ -99,6 +108,7 @@ if __name__ == '__main__':
             get_col_e(website),
             get_col_f(website),
             get_col_g(website),
+            get_col_h(website),
         ]
 
         print(row)
