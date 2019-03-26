@@ -102,6 +102,8 @@ if __name__ == '__main__':
 
     websites = get_websites(dataset_in)
     for website in websites:
+        # replace the period with a space, because GitHub search is weird.
+        website = website.replace('.', ' ')
         row = [
             website,
             get_col_c(website),
