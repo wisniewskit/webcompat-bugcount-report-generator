@@ -3,9 +3,9 @@ import requests
 import time
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from requests_html import HTMLSession
 from tablib import Dataset
-
 
 DATA_PATH = os.path.join(os.getcwd(), 'data/top-sites.csv')
 EXPORT_PATH = os.path.join(os.getcwd(), 'data/export/{}.csv'.format(datetime.now().strftime('%Y%m%d-%H%M%S')))
@@ -29,8 +29,11 @@ def api_request(*args, **kwargs):
         return api_request(*args, **kwargs)
 
 def get_col_c(website):
-    template = 'https://bugzilla.mozilla.org/buglist.cgi?bug_file_loc_type=allwordssubstr&list_id=14485116&resolution=---&bug_file_loc={}&query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Firefox&product=Firefox%20for%20Android&product=Web%20Compatibility'
-    query = template.format(website)
+    # we want to add the dot back for Bugzilla search
+    website = website.replace(' ', '.')
+    last_year = datetime.now() - relativedelta(years=1)
+    template = 'https://bugzilla.mozilla.org/buglist.cgi?f1=OP&bug_file_loc_type=allwordssubstr&o3=greaterthan&list_id=14636479&v3={date}&resolution=---&bug_file_loc={site}&query_format=advanced&f3=creation_ts&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Fenix&product=Firefox%20for%20Android&product=Firefox%20for%20Echo%20Show&product=Firefox%20for%20FireTV&product=Firefox%20for%20iOS&product=GeckoView&product=Web%20Compatibility'
+    query = template.format(site=website, date=last_year.strftime("%Y-%m-%d"))
     session = HTMLSession()
     r = session.get(query)
     try:
