@@ -95,11 +95,11 @@ if __name__ == '__main__':
 
     dataset_out = Dataset(headers=[
         'Website',
-        'Bugzilla',
-        'Github - open',
-        'Github - severity-critical',
-        'Github - needsdiagnosis',
-        'Github - sitewait',
+        'fresh 🐞s',
+        'webcompat.com 🐞s',
+        'severity-critical 🐞s',
+        'needsdiagnosis 🐞s',
+        'sitewait 🐞s',
     ])
 
     websites = get_websites(dataset_in)
