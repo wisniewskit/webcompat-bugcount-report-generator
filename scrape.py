@@ -10,15 +10,21 @@ from tablib import Dataset
 DATA_PATH = os.path.join(os.getcwd(), 'data/top-sites.csv')
 EXPORT_PATH = os.path.join(os.getcwd(), 'data/export/{}.csv'.format(datetime.now().strftime('%Y%m%d-%H%M%S')))
 GITHUB_API_TOKEN = os.environ.get('GITHUB_API_TOKEN')
-
+REQUEST_HEADERS = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN),
+    'User-Agent': 'mozilla/webcompat-bugcount-report-generator'}
 
 def get_websites(dataset):
     websites = dataset.get_col(0)
     return websites
 
+s = requests.Session()
+s.headers.update(REQUEST_HEADERS)
+
 def api_request(*args, **kwargs):
     try:
-        response = requests.get(*args, **kwargs)
+        # try to delay getting rate limited
+        time.sleep(3)
+        response = s.get(*args, **kwargs)
         response.raise_for_status()
         print(response)
         return response
@@ -48,7 +54,7 @@ def get_col_d(website):
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+state%3Aopen&type=Issues'
     search = search_template.format(website)
-    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
+    response = api_request(search).json()
     count = response['total_count']
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
@@ -57,7 +63,7 @@ def get_col_e(website):
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+label%3Aseverity-critical+'
     search = search_template.format(website)
-    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
+    response = api_request(search).json()
     count = response['total_count']
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
@@ -66,7 +72,7 @@ def get_col_f(website):
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aneedsdiagnosis'
     search = search_template.format(website)
-    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
+    response = api_request(search).json()
     count = response['total_count']
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
@@ -75,16 +81,7 @@ def get_col_g(website):
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Asitewait'
     search = search_template.format(website)
-    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
-    count = response['total_count']
-    return '=HYPERLINK("{}"; {})'.format(query, count)
-
-def get_col_h(website):
-    template = 'https://github.com/webcompat/web-bugs/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aduplicate'
-    query = template.format(website)
-    search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aduplicate'
-    search = search_template.format(website)
-    response = api_request(search, headers = {'Authorization': 'token {}'.format(GITHUB_API_TOKEN)}).json()
+    response = api_request(search).json()
     count = response['total_count']
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
@@ -100,7 +97,6 @@ if __name__ == '__main__':
         'Github - severity-critical',
         'Github - needsdiagnosis',
         'Github - sitewait',
-        'Github - duplicate'
     ])
 
     websites = get_websites(dataset_in)
@@ -114,7 +110,6 @@ if __name__ == '__main__':
             get_col_e(website),
             get_col_f(website),
             get_col_g(website),
-            get_col_h(website),
         ]
 
         print(row)
