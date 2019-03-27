@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 import time
@@ -29,7 +30,9 @@ def api_request(*args, **kwargs):
         print(response)
         return response
     except requests.exceptions.HTTPError as e:
+        json_response = json.loads(response.text)
         print(e)
+        print(json_response['message'])
         print('Sleeping...')
         time.sleep(60)
         return api_request(*args, **kwargs)
