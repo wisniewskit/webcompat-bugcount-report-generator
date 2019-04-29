@@ -62,6 +62,9 @@ def get_col_c(website):
 
 
 def get_col_d(website):
+    '''
+    Column D represents open webcompat bugs.
+    '''
     template = 'https://github.com/search?p=8&q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+state%3Aopen&type=Issues'  # noqa
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+state%3Aopen&type=Issues'  # noqa
@@ -72,6 +75,9 @@ def get_col_d(website):
 
 
 def get_col_e(website):
+    '''
+    Column E represents severity-critical webcompat bugs
+    '''
     template = 'https://github.com/webcompat/web-bugs/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+label%3Aseverity-critical+'  # noqa
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+label%3Aseverity-critical+'  # noqa
@@ -82,6 +88,9 @@ def get_col_e(website):
 
 
 def get_col_f(website):
+    '''
+    Column F represents needsdiagnosis webcompat bugs
+    '''
     template = 'https://github.com/search?p=8&q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aneedsdiagnosis'  # noqa
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Aneedsdiagnosis'  # noqa
@@ -92,6 +101,9 @@ def get_col_f(website):
 
 
 def get_col_g(website):
+    '''
+    Column G represents sitewait webcompat bugs
+    '''
     template = 'https://github.com/webcompat/web-bugs/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Asitewait'  # noqa
     query = template.format(website)
     search_template = 'https://api.github.com/search/issues?q={}+in%3Atitle+repo%3Awebcompat%2Fweb-bugs%2F+is%3Aopen+milestone%3Asitewait'  # noqa
