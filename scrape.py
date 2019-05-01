@@ -34,7 +34,6 @@ def api_request(*args, **kwargs):
         time.sleep(3)
         response = s.get(*args, **kwargs)
         response.raise_for_status()
-        print(response)
         return response
     except requests.exceptions.HTTPError as e:
         json_response = json.loads(response.text)
@@ -52,7 +51,7 @@ def get_col_c(website):
     # we want to add the dot back for Bugzilla search
     website = website.replace(' ', '.')
     last_year = datetime.now() - relativedelta(years=1)
-    template = 'https://bugzilla.mozilla.org/buglist.cgi?f1=OP&bug_file_loc_type=allwordssubstr&o3=greaterthan&list_id=14636479&v3={date}&resolution=---&bug_file_loc={site}&query_format=advanced&f3=creation_ts&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Fenix&product=Firefox%20for%20Android&product=Firefox%20for%20Echo%20Show&product=Firefox%20for%20FireTV&product=Firefox%20for%20iOS&product=GeckoView&product=Web%20Compatibility'  # noqa
+    template = 'https://bugzilla.mozilla.org/buglist.cgi?f1=OP&bug_file_loc_type=allwordssubstr&o3=greaterthan&list_id=14636479&v3={date}&resolution=---&bug_file_loc={site}&query_format=advanced&f3=creation_ts&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Fenix&product=Firefox%20for%20Android&product=Firefox%20for%20Echo%20Show&product=Firefox%20for%20FireTV&product=Firefox%20for%20iOS&product=GeckoView&product=Web%20Compatibility&keywords_type=nowords&keywords=meta%2C%20&status_whiteboard_type=notregexp&status_whiteboard=sci%5C-exclude'  # noqa
     query = template.format(site=website, date=last_year.strftime("%Y-%m-%d"))
     session = HTMLSession()
     r = session.get(query)
