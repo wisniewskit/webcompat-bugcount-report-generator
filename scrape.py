@@ -103,24 +103,20 @@ if __name__ == '__main__':
         'fresh 🐞s',
         'webcompat.com 🐞s',
         'severity-critical 🐞s',
-        'needsdiagnosis 🐞s',
-        'sitewait 🐞s',
     ])
 
     websites = get_websites(dataset_in)
-    for website in websites:
+    for idx, website in enumerate(websites):
         # replace the period with a space, because GitHub search is weird.
-        website = website.replace('.', ' ')
+        space_website = website.replace('.', ' ')
         row = [
             website,
-            get_col_c(website),
-            get_col_d(website),
-            get_col_e(website),
-            get_col_f(website),
-            get_col_g(website),
+            get_col_c(space_website),
+            get_col_d(space_website),
+            get_col_e(space_website),
         ]
 
-        print(row)
+        print(idx, website)
         dataset_out.append(row)
 
     with open(EXPORT_PATH, 'wb') as f:
