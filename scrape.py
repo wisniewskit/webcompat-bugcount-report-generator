@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import requests
 import time
 
@@ -93,6 +94,75 @@ def get_col_e(website):
     return '=HYPERLINK("{}"; {})'.format(query, count)
 
 
+def get_col_h(website):
+    '''
+    Column H represents duplicates (webcompat.com see-also links on Bugzilla
+    which are also marked as duplicates on webcompat.com)
+
+    To do so, an advanced Bugzilla search is first done to get all bugs for
+    a given site with any see-alsos on webcompat.com:
+    - See Also contains any of the strings: webcompat.com,github.com/webcompat
+    - Changed is greater than or equal to: 2018
+    - Status contains any of the strings: UNCONFIRMED,NEW,ASSIGNED,REOPENED
+    - URL contains the string (exact case): (website)
+
+    Then GitHub queries are run to confirm how many of the discovered issues
+    are in the duplicate milestone.
+    '''
+    see_also_template = 'https://bugzilla.mozilla.org/rest/bug?include_fields=id,see_also&f1=see_also&f2=delta_ts&f3=bug_status&f4=bug_file_loc&o1=anywordssubstr&o2=greaterthaneq&o3=anywordssubstr&o4=casesubstring&v1=webcompat.com%2Cgithub.com%2Fwebcompat&v2=2018&v3=UNCONFIRMED%2CNEW%2CASSIGNED%2CREOPENED&v4={site}&limit=0'  # noqa
+    see_also_query = see_also_template.format(site=website)
+    session = HTMLSession()
+    response = session.get(see_also_query)
+    json_response = json.loads(response.text)
+
+    github_issues_to_check = []
+    for bug in json_response['bugs']:
+        bz_id = bug["id"]
+        for see_also_link in bug["see_also"]:
+            if see_also_link.find("webcompat.com") >= 0 or\
+               see_also_link.find("github.com/webcompat") >= 0:
+                github_id = re.search("/(\d+)", see_also_link).group(1)
+                github_issues_to_check.append([github_id, bz_id])
+
+    # GitHub search queries (q parameter) cannot be too long, so do >1 requests
+    searches = []
+    base_search_query = "is%3Aissue+milestone%3Aduplicate+repo%3Awebcompat%2Fweb-bugs%2F"
+    search_query = base_search_query
+    search_map_gh_to_bz = {}
+    id_index = 0
+    while id_index < len(github_issues_to_check):
+        github_id, bz_id = github_issues_to_check[id_index]
+        id_index += 1
+        if len(search_query) + 1 + len(github_id) > 256:
+            searches.append([search_query, search_map_gh_to_bz])
+            search_query = base_search_query
+            search_map_gh_to_bz = {}
+        search_query += "+" + github_id
+        search_map_gh_to_bz[int(github_id)] = bz_id
+    searches.append([search_query, search_map_gh_to_bz])
+
+    count = 0
+    duped_bz_ids = set()
+    for [query, gh_to_bz_map] in searches:
+        milestone_template = 'https://api.github.com/search/issues?per_page=100&q={query}'  # noqa
+        milestone_search = milestone_template.format(query=query)
+        response = api_request(milestone_search).json()
+        if response['incomplete_results']:
+            raise "Should not have over 100 results for just {n} search items".format(len(ids))
+        for item in response["items"]:
+            bz_id = gh_to_bz_map.get(item["number"])
+            if bz_id is not None and item["milestone"]["title"] == "duplicate":
+                duped_bz_ids.add(bz_id)
+                count += 1
+
+    if count:
+        param = "%2C".join(str(id) for id in duped_bz_ids)
+        bz_link = "https://bugzilla.mozilla.org/buglist.cgi?o1=anyexact&v1={ids}&f1=bug_id".format(ids=param)
+        return '=HYPERLINK("{}"; {})'.format(bz_link, count)
+    else:
+        return "0"
+
+
 if __name__ == '__main__':
     dataset_in = Dataset(headers=['Website'])
     dataset_in.load(open(DATA_PATH, 'rb').read().decode('utf-8'), format='csv')
@@ -102,6 +172,7 @@ if __name__ == '__main__':
         'fresh 🐞s',
         'webcompat.com 🐞s',
         'severity-critical 🐞s',
+        'duplicate 🐞s',
     ])
 
     websites = get_websites(dataset_in)
@@ -113,6 +184,7 @@ if __name__ == '__main__':
             get_col_c(space_website),
             get_col_d(space_website),
             get_col_e(space_website),
+            get_col_h(website),
         ]
 
         print(idx, website)
