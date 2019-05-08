@@ -47,13 +47,12 @@ def api_request(*args, **kwargs):
 
 def get_col_c(website):
     '''
-    Column C represents "Fresh Bugzilla" bugs.
+    Column C represents Bugzilla bugs created after the DX Epoch (2018-01-01).
     '''
     # we want to add the dot back for Bugzilla search
     website = website.replace(' ', '.')
-    last_year = datetime.now() - relativedelta(years=1)
-    template = 'https://bugzilla.mozilla.org/buglist.cgi?f1=OP&bug_file_loc_type=allwordssubstr&o3=greaterthan&list_id=14636479&v3={date}&resolution=---&bug_file_loc={site}&query_format=advanced&f3=creation_ts&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Fenix&product=Firefox%20for%20Android&product=Firefox%20for%20Echo%20Show&product=Firefox%20for%20FireTV&product=Firefox%20for%20iOS&product=GeckoView&product=Web%20Compatibility&keywords_type=nowords&keywords=meta%2C%20&status_whiteboard_type=notregexp&status_whiteboard=sci%5C-exclude'  # noqa
-    query = template.format(site=website, date=last_year.strftime("%Y-%m-%d"))
+    template = 'https://bugzilla.mozilla.org/buglist.cgi?f1=OP&bug_file_loc_type=allwordssubstr&o3=greaterthan&list_id=14636479&v3=2018&resolution=---&bug_file_loc={site}&query_format=advanced&f3=creation_ts&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=Core&product=Fenix&product=Firefox%20for%20Android&product=Firefox%20for%20Echo%20Show&product=Firefox%20for%20FireTV&product=Firefox%20for%20iOS&product=GeckoView&product=Web%20Compatibility&keywords_type=nowords&keywords=meta%2C%20&status_whiteboard_type=notregexp&status_whiteboard=sci%5C-exclude'  # noqa
+    query = template.format(site=website)
     session = HTMLSession()
     r = session.get(query)
     try:
@@ -102,14 +101,13 @@ def get_col_h(website):
     To do so, an advanced Bugzilla search is first done to get all bugs for
     a given site with any see-alsos on webcompat.com:
     - See Also contains any of the strings: webcompat.com,github.com/webcompat
-    - Changed is greater than or equal to: 2018
     - Status contains any of the strings: UNCONFIRMED,NEW,ASSIGNED,REOPENED
     - URL contains the string (exact case): (website)
 
     Then GitHub queries are run to confirm how many of the discovered issues
     are in the duplicate milestone.
     '''
-    see_also_template = 'https://bugzilla.mozilla.org/rest/bug?include_fields=id,see_also&f1=see_also&f2=delta_ts&f3=bug_status&f4=bug_file_loc&o1=anywordssubstr&o2=greaterthaneq&o3=anywordssubstr&o4=casesubstring&v1=webcompat.com%2Cgithub.com%2Fwebcompat&v2=2018&v3=UNCONFIRMED%2CNEW%2CASSIGNED%2CREOPENED&v4={site}&limit=0'  # noqa
+    see_also_template = 'https://bugzilla.mozilla.org/rest/bug?include_fields=id,see_also&f1=see_also&f2=bug_status&f3=bug_file_loc&o1=anywordssubstr&o2=anywordssubstr&o3=casesubstring&v1=webcompat.com%2Cgithub.com%2Fwebcompat&v2=UNCONFIRMED%2CNEW%2CASSIGNED%2CREOPENED&v3={site}&limit=0'  # noqa
     see_also_query = see_also_template.format(site=website)
     session = HTMLSession()
     response = session.get(see_also_query)
